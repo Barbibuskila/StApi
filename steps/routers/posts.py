@@ -1,14 +1,18 @@
+from time import time
+
 from fastapi import APIRouter, HTTPException
 from loguru import logger
 
 from steps.common.post import Post
 from steps.logic.posts import AsyncMongoPostsHandler
+from steps.logic.statistics import AsyncMongoStatisticsHandler
 from steps.responses import ok, internal_server_error
 
 
-def create_posts_router(post_handler: AsyncMongoPostsHandler):
+def create_posts_router(post_handler: AsyncMongoPostsHandler, stats_handler: AsyncMongoStatisticsHandler):
     """
     Create posts router that contain all posts logics.
+    :param stats_handler: statistics database handler
     :param post_handler: posts database handler
     :return: Fastapi router.
     """
@@ -22,10 +26,13 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler):
         :return: Http response according to the result of the post creation.
         """
         try:
+            start = time()
             new_post = await post_handler.create_post(post=post_data)
             if new_post is None:
                 logger.error("Create post failed - unknown reason")
                 return internal_server_error()
+            total = time() - start
+            await insert_to_statistics("post", total)
             return ok()
         except HTTPException as err:
             logger.error(f"Create post failed - {err}")
@@ -44,7 +51,10 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler):
         :return: List of posts.
         """
         try:
+            start = time()
             posts = await post_handler.get_posts(skip, limit)
+            total = time() - start
+            await insert_to_statistics("get", total)
             return posts
         except HTTPException as err:
             logger.error(f"Retrieve posts failed - {err}")
@@ -68,5 +78,15 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler):
         except Exception as err:
             logger.error(f"Retrieve amount of posts failed - {err}")
             return internal_server_error()
+
+    async def insert_to_statistics(request_type, duration):
+        try:
+            result = await stats_handler.post_requests_duration(request_type, duration)
+            if result is None:
+                logger.error("Cannot insert request stats to database")
+        except HTTPException as err:
+            logger.error("Cannot insert request stats to database")
+        except Exception as err:
+            logger.error("Cannot insert request stats to database")
 
     return router
