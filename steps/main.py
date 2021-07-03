@@ -1,7 +1,9 @@
 from asyncio import get_event_loop
 from typing import Optional
-from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from uvicorn import Config, Server
 
@@ -9,8 +11,7 @@ from steps.config_reader import read_config
 from steps.logic.posts import AsyncMongoPostsHandler
 from steps.routers.basic import create_basic_router
 from steps.routers.posts import create_posts_router
-from loguru import logger
-from sys import exit as _exit
+from steps.routers.statistics import create_statistics_router
 
 
 class StepsApi:
@@ -72,6 +73,9 @@ class StepsApi:
         self.app.include_router(router=create_posts_router(AsyncMongoPostsHandler(self._database, "Posts")),
                                 prefix="/posts",
                                 tags=["Posts"])
+        self.app.include_router(router=create_statistics_router(AsyncMongoPostsHandler(self._database, "Posts")),
+                                prefix="/stats",
+                                tags=["Statistics"])
 
     def _run_server(self):
         """

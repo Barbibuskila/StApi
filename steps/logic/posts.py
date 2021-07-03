@@ -54,3 +54,22 @@ class AsyncMongoPostsHandler:
         :return: amount of posts.
         """
         return await self._collection.estimated_document_count()
+
+    async def get_top_10_creators(self):
+        """
+        Gets top ten posts creators
+        :return: List of the top ten posts creators
+        """
+        creators = {
+
+        }
+        async for document in self._collection.find():
+            post = convert_document_to_model(document, Post)
+            if post.user_id in creators:
+                creators[post.user_id] += 1
+            else:
+                creators[post.user_id] = 1
+        ordered_creators = dict(sorted(creators.items(), key=lambda item: item[1], reverse=True)[:11])
+
+        return ordered_creators
+
