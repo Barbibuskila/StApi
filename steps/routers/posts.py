@@ -31,7 +31,7 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler):
             return internal_server_error()
 
     @router.get("/")
-    def get_posts(skip: 0, limit: 0):
+    def get_posts(skip: int = 0, limit: int = 0):
         return []
 
     return router

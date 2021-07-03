@@ -9,6 +9,8 @@ from steps.config_reader import read_config
 from steps.logic.posts import AsyncMongoPostsHandler
 from steps.routers.basic import create_basic_router
 from steps.routers.posts import create_posts_router
+from loguru import logger
+from sys import exit as _exit
 
 
 class StepsApi:
@@ -28,13 +30,25 @@ class StepsApi:
         """
         Starts the api.
         """
-        self._connect_to_database()
-        self._add_routers()
-        self._run_server()
+        try:
+            self._connect_to_database()
+            self._add_routers()
+            self._run_server()
+        except:
+            logger.critical("Cannot start steps api")
+            _exit(1)
+
 
     def _connect_to_database(self):
-        client = AsyncIOMotorClient(self._database_config["connection_string"], uuidRepresentation="standard")
-        self._database = client[self._database_config["database"]]
+        try:
+            client = AsyncIOMotorClient(self._database_config["connection_string"], uuidRepresentation="standard")
+            self._database = client[self._database_config["database"]]
+
+        except Exception as err:
+            logger.critical(
+                f"Failed to {self._database_config['database']} mongo database"
+                f" with {self._database_config['connection_string']} connection string - {err}")
+            raise
 
     def _add_routers(self):
         """
