@@ -25,15 +25,25 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler):
             new_post = await post_handler.create_post(post=post_data)
             if new_post is None:
                 logger.error("Create post failed - unknown reason")
-                return ok()
+                return internal_server_error()
+            return ok()
         except HTTPException as err:
-            raise err
+            logger.error(f"Create post failed - {err}")
+            return internal_server_error()
         except Exception as err:
             logger.error(f"Create post failed - {err}")
             return internal_server_error()
 
     @router.get("/")
     async def get_posts(skip: int = 0, limit: int = 0):
-        return
+        try:
+            posts = await post_handler.get_posts(skip, limit)
+            return posts
+        except HTTPException as err:
+            logger.error(f"Retrieve posts failed - {err}")
+            return internal_server_error()
+        except Exception as err:
+            logger.error(f"Retrieve posts failed - {err}")
+            return internal_server_error()
 
     return router

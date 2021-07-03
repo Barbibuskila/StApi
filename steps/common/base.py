@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, Callable, Union
 
 from bson import ObjectId
 from pydantic import BaseModel as _BaseModel, Field

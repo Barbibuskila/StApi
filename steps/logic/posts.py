@@ -1,7 +1,8 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
+from pymongo import DESCENDING
 
 from steps.common.post import Post
-from steps.utils.mongo_utils import convert_model_to_document
+from steps.utils.mongo_utils import convert_model_to_document, convert_document_to_model
 
 
 class AsyncMongoPostsHandler:
@@ -22,3 +23,20 @@ class AsyncMongoPostsHandler:
         """
         document = convert_model_to_document(post)
         return await self._collection.insert_one(document)
+
+    async def get_posts(self, skip=0, limit=0):
+        models = []
+
+        if skip != 0:
+            if limit != 0:
+                mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING).skip(skip).limit(limit)
+            else:
+                mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING).skip(skip)
+        elif limit != 0:
+            mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING).limit(limit)
+        else:
+            mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING)
+
+        async for document in mongo_command():
+            models.append(convert_document_to_model(document, Post))
+        return models
