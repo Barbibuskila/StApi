@@ -278,7 +278,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "1ec92f04fdc11ed97ecf0be291a8e4e7a03f9d583d64e6894af6b67bb161aca6"
+content-hash = "ae078cbb0bcf464118eddf86faa48b9b77a8c5b287915737051d2d5d0b9bb6a2"
 
 [metadata.files]
 asgiref = [

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from steps.common.post import Post
 from steps.logic.posts import AsyncMongoPostsHandler
@@ -26,12 +26,14 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler):
             if new_post is None:
                 logger.error("Create post failed - unknown reason")
                 return ok()
+        except HTTPException as err:
+            raise err
         except Exception as err:
             logger.error(f"Create post failed - {err}")
             return internal_server_error()
 
     @router.get("/")
-    def get_posts(skip: int = 0, limit: int = 0):
-        return []
+    async def get_posts(skip: int = 0, limit: int = 0):
+        return
 
     return router

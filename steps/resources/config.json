@@ -4,7 +4,7 @@
     "port": 5000
   },
   "mongodb": {
-    "connection_string": "mongodb+srv://StUser:5imv4vsb4zQg4tdc@stcluster.ysf1g.mongodb.net/StDatabase?retryWrites=true&w=majority",
+    "connection_string": "mongodb+srv://StUser:e2ujJzyINatDmhRe@stcluster.ysf1g.mongodb.net/StDatabase?retryWrites=true&w=majority",
     "database": "StDatabase"
   }
 }

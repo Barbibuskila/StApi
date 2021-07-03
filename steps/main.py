@@ -1,6 +1,6 @@
 from asyncio import get_event_loop
 from typing import Optional
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from uvicorn import Config, Server
@@ -31,19 +31,32 @@ class StepsApi:
         Starts the api.
         """
         try:
+            self._enable_cors()
             self._connect_to_database()
             self._add_routers()
             self._run_server()
         except:
             logger.critical("Cannot start steps api")
-            _exit(1)
+            raise
 
+    def _enable_cors(self):
+        """
+        Add cors middleware, allow all
+        :return:
+        """
+        self.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     def _connect_to_database(self):
         try:
-            client = AsyncIOMotorClient(self._database_config["connection_string"], uuidRepresentation="standard")
+            client = AsyncIOMotorClient(self._database_config["connection_string"], uuidRepresentation="standard",
+                                        ssl=True, ssl_cert_reqs='CERT_NONE')
             self._database = client[self._database_config["database"]]
-
         except Exception as err:
             logger.critical(
                 f"Failed to {self._database_config['database']} mongo database"
@@ -57,6 +70,7 @@ class StepsApi:
         """
         self.app.include_router(router=create_basic_router(), tags=["Basic"])
         self.app.include_router(router=create_posts_router(AsyncMongoPostsHandler(self._database, "Posts")),
+                                prefix="/posts",
                                 tags=["Posts"])
 
     def _run_server(self):
