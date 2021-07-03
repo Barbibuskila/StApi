@@ -13,3 +13,5 @@ def create_posts_router():
     @router.get("/")
     def get_posts(skip: 0, limit: 0):
         pass
+
+    return router
