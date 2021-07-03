@@ -22,6 +22,7 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler, stats_handler: Asy
     async def post(post_data: Post):
         """
         Create post and insert it to database
+        Save request duration to side collection
         :param post_data: post data from the http request body
         :return: Http response according to the result of the post creation.
         """
@@ -46,6 +47,7 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler, stats_handler: Asy
         """
         Get posts from database, order by creation_time
         Can take only chunk of posts by skip and limit query parameters
+        Save request duration to side collection
         :param skip: How much to skip from the start
         :param limit: How much to take
         :return: List of posts.
@@ -80,13 +82,19 @@ def create_posts_router(post_handler: AsyncMongoPostsHandler, stats_handler: Asy
             return internal_server_error()
 
     async def insert_to_statistics(request_type, duration):
+        """
+        Insert request with type and duration to database of late analytics.
+        NOTE: if this method crashes there is no handling - We don't want to interrupt main logic.
+        :param request_type: Post or Get posts
+        :param duration: duration of the request
+        """
         try:
             result = await stats_handler.post_requests_duration(request_type, duration)
             if result is None:
                 logger.error("Cannot insert request stats to database")
         except HTTPException as err:
-            logger.error("Cannot insert request stats to database")
+            logger.error(f"Cannot insert request stats to database - {err}")
         except Exception as err:
-            logger.error("Cannot insert request stats to database")
+            logger.error(f"Cannot insert request stats to database - {err}")
 
     return router

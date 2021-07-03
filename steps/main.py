@@ -1,4 +1,5 @@
 from asyncio import get_event_loop
+from sys import exit as _exit
 from typing import Optional
 
 from fastapi import FastAPI
@@ -34,19 +35,18 @@ class StepsApi:
         Starts the api.
         """
         try:
-            self._add_middlewares()
+            self._add_metrics()
             self._enable_cors()
             self._connect_to_database()
             self._add_routers()
             self._run_server()
         except:
             logger.critical("Cannot start steps api")
-            raise
+            _exit(1)
 
-    def _add_middlewares(self):
+    def _add_metrics(self):
         """
-        Adds middlewares
-        Prometheus middleware for metrics
+        Adds Prometheus middleware for metrics
         :return:
         """
         self.app.add_middleware(PrometheusMiddleware)
@@ -66,6 +66,9 @@ class StepsApi:
         )
 
     def _connect_to_database(self):
+        """
+        Connect to mongodb.
+        """
         try:
             client = AsyncIOMotorClient(self._database_config["connection_string"], uuidRepresentation="standard",
                                         ssl=True, ssl_cert_reqs='CERT_NONE')
@@ -81,28 +84,39 @@ class StepsApi:
         Add all routers to application.
         Each route contain business logic
         """
-        self.app.include_router(router=create_basic_router(), tags=["Basic"])
-        self.app.include_router(router=create_posts_router(AsyncMongoPostsHandler(self._database, "Posts"),
-                                                           AsyncMongoStatisticsHandler(self._database, "Requests")),
-                                prefix="/posts",
-                                tags=["Posts"])
-        self.app.include_router(router=create_statistics_router(AsyncMongoPostsHandler(self._database, "Posts"),
-                                                                AsyncMongoStatisticsHandler(self._database,
-                                                                                            "Requests")),
-                                prefix="/stats",
-                                tags=["Statistics"])
+        try:
+            self.app.include_router(router=create_basic_router(), tags=["Basic"])
+            self.app.include_router(router=create_posts_router(AsyncMongoPostsHandler(self._database, "Posts"),
+                                                               AsyncMongoStatisticsHandler(self._database, "Requests")),
+                                    prefix="/posts",
+                                    tags=["Posts"])
+            self.app.include_router(router=create_statistics_router(AsyncMongoPostsHandler(self._database, "Posts"),
+                                                                    AsyncMongoStatisticsHandler(self._database,
+                                                                                                "Requests")),
+                                    prefix="/stats",
+                                    tags=["Statistics"])
+        except Exception as err:
+            logger.critical(f"Cannot add routers to api server - {err}")
+            raise
 
     def _run_server(self):
         """
         Runs fastapi async http server
         """
-        loop = get_event_loop()
-        config = Config(self.app, host=self._host, port=self._port)
-        server = Server(config)
-        loop.run_until_complete(server.serve())
+        try:
+            loop = get_event_loop()
+            config = Config(self.app, host=self._host, port=self._port)
+            server = Server(config)
+            loop.run_until_complete(server.serve())
+        except Exception as err:
+            logger.critical(f"Cannot run fastapi async http server - {err}")
+            raise
 
 
 def main():
+    """
+    Reads configuration, create steps api and runs it.
+    """
     config = read_config("./resources/config.json")
     server = config["server"]
     mongodb = config["mongodb"]

@@ -43,4 +43,3 @@ def internal_server_error(content=None):
     :return: Internal Server Error Http Response
     """
     return Response(content=content, status_code=500)
-

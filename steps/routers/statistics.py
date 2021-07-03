@@ -17,6 +17,10 @@ def create_statistics_router(post_handler: AsyncMongoPostsHandler, stats_handler
 
     @router.get("/topcreators")
     async def get_top_creators():
+        """
+        Gets top ten posts creators
+        :return: Dictionary of the top ten posts creators - User: Count
+        """
         try:
             creators = await post_handler.get_top_10_creators()
             return creators
@@ -26,6 +30,10 @@ def create_statistics_router(post_handler: AsyncMongoPostsHandler, stats_handler
 
     @router.get("/runtimes")
     async def get_average_runtime_of_posts_functions():
+        """
+        Calculate the average runtime of post and get of posts
+        :return: Average runtime.
+        """
         try:
             average_runtime = await stats_handler.get_average_runtimes()
             return average_runtime

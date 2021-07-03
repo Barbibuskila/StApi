@@ -59,7 +59,7 @@ class AsyncMongoPostsHandler:
     async def get_top_10_creators(self):
         """
         Gets top ten posts creators
-        :return: List of the top ten posts creators
+        :return: Dictionary of the top ten posts creators - User: Count
         """
         creators = {
 
