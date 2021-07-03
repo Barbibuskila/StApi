@@ -3,7 +3,7 @@ from loguru import logger
 
 from steps.logic.posts import AsyncMongoPostsHandler
 from steps.responses import internal_server_error
-
+from starlette_exporter import handle_metrics
 
 def create_statistics_router(post_handler: AsyncMongoPostsHandler):
     """
