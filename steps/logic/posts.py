@@ -25,6 +25,13 @@ class AsyncMongoPostsHandler:
         return await self._collection.insert_one(document)
 
     async def get_posts(self, skip=0, limit=0):
+        """
+        Get posts from database, order by creation_time
+        Can take only chunk of posts by skip and limit query parameters
+        :param skip: How much to skip from the start
+        :param limit: How much to take
+        :return: List of posts.
+        """
         models = []
 
         if skip != 0:
@@ -40,3 +47,10 @@ class AsyncMongoPostsHandler:
         async for document in mongo_command():
             models.append(convert_document_to_model(document, Post))
         return models
+
+    async def get_total_amount_of_posts(self):
+        """
+        Get the total amounts of posts stored in the database
+        :return: amount of posts.
+        """
+        return await self._collection.estimated_document_count()
