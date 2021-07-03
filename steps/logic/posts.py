@@ -4,7 +4,7 @@ from steps.common.post import Post
 from steps.utils.mongo_utils import convert_model_to_document
 
 
-class MongoPostsHandler:
+class AsyncMongoPostsHandler:
     def __init__(self, db: AsyncIOMotorDatabase, collection_name: str):
         """
         Mongo posts handler

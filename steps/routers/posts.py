@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 
 from steps.common.post import Post
-from steps.logic.posts import MongoPostsHandler
+from steps.logic.posts import AsyncMongoPostsHandler
 from loguru import logger
 from steps.responses import ok, internal_server_error
 
 
-def create_posts_router(post_handler: MongoPostsHandler):
+def create_posts_router(post_handler: AsyncMongoPostsHandler):
     """
     Create posts router that contain all posts logics.
     :param post_handler: posts database handler
@@ -32,6 +32,6 @@ def create_posts_router(post_handler: MongoPostsHandler):
 
     @router.get("/")
     def get_posts(skip: 0, limit: 0):
-        pass
+        return []
 
     return router
