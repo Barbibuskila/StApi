@@ -1,6 +1,6 @@
 from asyncio import get_event_loop
 from typing import Optional
-
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -32,6 +32,7 @@ class StepsApi:
         Starts the api.
         """
         try:
+            self._add_middlewares()
             self._enable_cors()
             self._connect_to_database()
             self._add_routers()
@@ -39,6 +40,15 @@ class StepsApi:
         except:
             logger.critical("Cannot start steps api")
             raise
+
+    def _add_middlewares(self):
+        """
+        Adds middlewares
+        Prometheus middleware for metrics
+        :return:
+        """
+        self.app.add_middleware(PrometheusMiddleware)
+        self.app.add_route("/metrics", handle_metrics)
 
     def _enable_cors(self):
         """

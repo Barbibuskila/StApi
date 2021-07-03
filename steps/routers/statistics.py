@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from steps.logic.posts import AsyncMongoPostsHandler
-from steps.responses import ok, internal_server_error
 from loguru import logger
+
+from steps.logic.posts import AsyncMongoPostsHandler
+from steps.responses import internal_server_error
 
 
 def create_statistics_router(post_handler: AsyncMongoPostsHandler):
@@ -19,6 +20,7 @@ def create_statistics_router(post_handler: AsyncMongoPostsHandler):
             return creators
         except Exception as err:
             logger.error(err)
+            return internal_server_error()
 
     @router.get("/runtimes")
     def get_average_runtime_of_posts_functions():

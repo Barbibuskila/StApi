@@ -36,7 +36,8 @@ class AsyncMongoPostsHandler:
 
         if skip != 0:
             if limit != 0:
-                mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING).skip(skip).limit(limit)
+                mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING).skip(skip).limit(
+                    limit)
             else:
                 mongo_command = lambda: self._collection.find().sort("creation_time", DESCENDING).skip(skip)
         elif limit != 0:
@@ -72,4 +73,3 @@ class AsyncMongoPostsHandler:
         ordered_creators = dict(sorted(creators.items(), key=lambda item: item[1], reverse=True)[:11])
 
         return ordered_creators
-
